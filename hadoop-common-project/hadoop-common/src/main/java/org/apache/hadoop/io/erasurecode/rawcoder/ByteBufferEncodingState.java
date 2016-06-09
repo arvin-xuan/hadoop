@@ -46,6 +46,16 @@ class ByteBufferEncodingState extends EncodingState {
     checkBuffers(outputs);
   }
 
+  ByteBufferEncodingState(RawErasureEncoder encoder,
+                          int decodeLength,
+                          ByteBuffer[] inputs,
+                          ByteBuffer[] outputs) {
+    this.encoder = encoder;
+    this.encodeLength = decodeLength;
+    this.inputs = inputs;
+    this.outputs = outputs;
+  }
+
   /**
    * Convert to a ByteArrayEncodingState when it's backed by on-heap arrays.
    */

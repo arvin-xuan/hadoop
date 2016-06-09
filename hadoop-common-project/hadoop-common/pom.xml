@@ -13,8 +13,8 @@
   limitations under the License. See accompanying LICENSE file.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -510,24 +510,24 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <executions>
-            <execution>
-                <id>shelldocs</id>
-                <phase>pre-site</phase>
-                <goals>
-                    <goal>exec</goal>
-                </goals>
-                <configuration>
-                    <executable>${basedir}/../../dev-support/bin/shelldocs</executable>
-                    <workingDirectory>src/site/markdown</workingDirectory>
-                    <arguments>
-                        <argument>--skipprnorep</argument>
-                        <argument>--output</argument>
-                        <argument>${basedir}/src/site/markdown/UnixShellAPI.md</argument>
-                        <argument>--input</argument>
-                        <argument>${basedir}/src/main/bin/hadoop-functions.sh</argument>
-                    </arguments>
-                </configuration>
-            </execution>
+          <execution>
+            <id>shelldocs</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${basedir}/../../dev-support/bin/shelldocs</executable>
+              <workingDirectory>src/site/markdown</workingDirectory>
+              <arguments>
+                <argument>--skipprnorep</argument>
+                <argument>--output</argument>
+                <argument>${basedir}/src/site/markdown/UnixShellAPI.md</argument>
+                <argument>--input</argument>
+                <argument>${basedir}/src/main/bin/hadoop-functions.sh</argument>
+              </arguments>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -536,17 +536,17 @@
           <filesets>
             <fileset>
               <directory>src/site/markdown</directory>
-                <includes>
-                  <include>UnixShellAPI.md</include>
-                </includes>
+              <includes>
+                <include>UnixShellAPI.md</include>
+              </includes>
               <followSymlinks>false</followSymlinks>
             </fileset>
             <fileset>
               <directory>src/site/resources</directory>
-                <includes>
-                  <include>configuration.xsl</include>
-                  <include>core-default.xml</include>
-                </includes>
+              <includes>
+                <include>configuration.xsl</include>
+                <include>core-default.xml</include>
+              </includes>
               <followSymlinks>false</followSymlinks>
             </fileset>
           </filesets>
@@ -978,35 +978,35 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <executions>
-                <execution>
-                    <id>releasedocs</id>
-                    <phase>pre-site</phase>
-                    <goals>
-                        <goal>exec</goal>
-                    </goals>
-                    <configuration>
-                        <executable>${basedir}/../../dev-support/bin/releasedocmaker</executable>
-                        <workingDirectory>src/site/markdown/release/</workingDirectory>
-                        <requiresOnline>true</requiresOnline>
-                        <arguments>
-                            <argument>--index</argument>
-                            <argument>--license</argument>
-                            <argument>--project</argument>
-                            <argument>HADOOP</argument>
-                            <argument>--project</argument>
-                            <argument>HDFS</argument>
-                            <argument>--project</argument>
-                            <argument>MAPREDUCE</argument>
-                            <argument>--project</argument>
-                            <argument>YARN</argument>
-                            <argument>--projecttitle</argument>
-                            <argument>"Apache Hadoop"</argument>
-                            <argument>--usetoday</argument>
-                            <argument>--version</argument>
-                            <argument>${project.version}</argument>
-                        </arguments>
-                    </configuration>
-                </execution>
+              <execution>
+                <id>releasedocs</id>
+                <phase>pre-site</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>${basedir}/../../dev-support/bin/releasedocmaker</executable>
+                  <workingDirectory>src/site/markdown/release/</workingDirectory>
+                  <requiresOnline>true</requiresOnline>
+                  <arguments>
+                    <argument>--index</argument>
+                    <argument>--license</argument>
+                    <argument>--project</argument>
+                    <argument>HADOOP</argument>
+                    <argument>--project</argument>
+                    <argument>HDFS</argument>
+                    <argument>--project</argument>
+                    <argument>MAPREDUCE</argument>
+                    <argument>--project</argument>
+                    <argument>YARN</argument>
+                    <argument>--projecttitle</argument>
+                    <argument>"Apache Hadoop"</argument>
+                    <argument>--usetoday</argument>
+                    <argument>--version</argument>
+                    <argument>${project.version}</argument>
+                  </arguments>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
           <plugin>
@@ -1015,10 +1015,10 @@
               <filesets>
                 <fileset>
                   <directory>src/site/markdown/release</directory>
-                    <includes>
-                      <include>${project.version}/</include>
-                      <include>index.md</include>
-                    </includes>
+                  <includes>
+                    <include>${project.version}/</include>
+                    <include>index.md</include>
+                  </includes>
                   <followSymlinks>false</followSymlinks>
                 </fileset>
               </filesets>
@@ -1041,22 +1041,22 @@
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
-                <execution>
-                    <id>common-test-bats-driver</id>
-                    <phase>test</phase>
-                    <goals>
-                        <goal>run</goal>
-                    </goals>
-                    <configuration>
-                      <target>
-                          <exec dir="src/test/scripts"
-                           executable="bash"
-                           failonerror="true">
-                           <arg value="./run-bats.sh" />
-                         </exec>
-                      </target>
-                    </configuration>
-                </execution>
+              <execution>
+                <id>common-test-bats-driver</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <exec dir="src/test/scripts"
+                          executable="bash"
+                          failonerror="true">
+                      <arg value="./run-bats.sh" />
+                    </exec>
+                  </target>
+                </configuration>
+              </execution>
             </executions>
           </plugin>
         </plugins>
