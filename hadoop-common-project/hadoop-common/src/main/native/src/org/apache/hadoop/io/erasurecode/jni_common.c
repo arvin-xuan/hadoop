@@ -24,6 +24,14 @@
 #include "erasure_code.h"
 #include "jni_common.h"
 
+void loadLib(JNIEnv *env) {
+  char errMsg[256];
+  load_erasurecode_lib(errMsg, sizeof(errMsg));
+  if (strlen(errMsg) > 0) {
+    THROW(env, "java/lang/UnsatisfiedLinkError", errMsg);
+  }
+}
+
 void setCoder(JNIEnv* env, jobject thiz, IsalCoder* pCoder) {
   jclass clazz = (*env)->GetObjectClass(env, thiz);
   jfieldID fid = (*env)->GetFieldID(env, clazz, "nativeCoder", "J");

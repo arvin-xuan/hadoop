@@ -632,6 +632,10 @@
                     <javahClassName>org.apache.hadoop.util.NativeCrc32</javahClassName>
                     <javahClassName>org.apache.hadoop.net.unix.DomainSocket</javahClassName>
                     <javahClassName>org.apache.hadoop.net.unix.DomainSocketWatcher</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawEncoder</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawDecoder</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeXORRawEncoder</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeXORRawDecoder</javahClassName>
                   </javahClassNames>
                   <javahOutputDirectory>${project.build.directory}/native/javah</javahOutputDirectory>
                 </configuration>
@@ -687,7 +691,7 @@
                   <results>${project.build.directory}/native-results</results>
                   <skipIfMissing>true</skipIfMissing>
                   <env>
-                    <LD_LIBRARY_PATH>${LD_LIBRARY_PATH}:${isal.lib}:${isal.prefix}:/usr/lib</LD_LIBRARY_PATH>
+                    <LD_LIBRARY_PATH>${LD_LIBRARY_PATH}:${isal.lib}:${isal.prefix}:/usr/lib64</LD_LIBRARY_PATH>
                   </env>
                 </configuration>
               </execution>
@@ -765,6 +769,10 @@
                     <javahClassName>org.apache.hadoop.io.compress.lz4.Lz4Compressor</javahClassName>
                     <javahClassName>org.apache.hadoop.io.compress.lz4.Lz4Decompressor</javahClassName>
                     <javahClassName>org.apache.hadoop.io.erasurecode.ErasureCodeNative</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawDecoder</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeRSRawEncoder</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeXORRawDecoder</javahClassName>
+                    <javahClassName>org.apache.hadoop.io.erasurecode.rawcoder.NativeXORRawEncoder</javahClassName>
                     <javahClassName>org.apache.hadoop.crypto.OpensslCipher</javahClassName>
                     <javahClassName>org.apache.hadoop.crypto.random.OpensslSecureRandom</javahClassName>
                     <javahClassName>org.apache.hadoop.util.NativeCrc32</javahClassName>
