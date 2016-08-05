@@ -20,8 +20,8 @@ public class TestFastWrite {
     Configuration conf;
     MiniDFSCluster cluster;
     DistributedFileSystem fs;
-    int factor = 500;
-    int bufferLen = 1024 * 1024;
+    int factor = 5;
+    int bufferLen = 10;
     int fileLen = factor * bufferLen;
 
     @Before
@@ -32,8 +32,9 @@ public class TestFastWrite {
         conf.set("dfs.client.localwrite.use.domain.socket","false");
         conf.set("dfs.client.localwrite.bytebuffer.queue.size","1000");
         conf.set("dfs.client.localwrite.bytebuffer.per.size","102400");
+        conf.set("dfs.blocksize","67108864000");
         conf.set("dfs.checksum.type","NULL");
-        cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build();
+        cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
         fs = cluster.getFileSystem();
     }
 
@@ -49,6 +50,7 @@ public class TestFastWrite {
             FSDataOutputStream out = fs.create(myFile, (short)2);
             out.write(buffer);
             out.close();
+
             assertTrue(fs.exists(myFile));
 
             long writenFileLen = fs.getFileStatus(myFile).getLen();
@@ -59,6 +61,44 @@ public class TestFastWrite {
             IOUtils.readFully(in, readBytes, 0, readBytes.length);
 
             Assert.assertArrayEquals(toWriteBytes, readBytes);
+
+        } finally {
+            cluster.shutdown();
+        }
+    }
+    @Test
+    public void testFastAppend() throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(fileLen);
+        byte[] toWriteBytes = generateBytes(fileLen,0);
+        buffer.put(toWriteBytes);
+        buffer.flip();
+
+        try {
+            Path myFile = new Path("/test/dir/file");
+            FSDataOutputStream out = fs.create(myFile, (short)1);
+            out.write(buffer);
+            out.close();
+
+            assertTrue(fs.exists(myFile));
+
+            buffer.clear();
+            buffer.put(toWriteBytes);
+            buffer.flip();
+            out = fs.append(myFile);
+            out.write(buffer);
+            out.close();
+
+            long writenFileLen = fs.getFileStatus(myFile).getLen();
+            Assert.assertEquals(fileLen*2, writenFileLen);
+
+            byte[] readBytes = new byte[(int)writenFileLen];
+            FSDataInputStream in = fs.open(myFile);
+            IOUtils.readFully(in, readBytes, 0, readBytes.length);
+
+            byte[] toBytes = new byte[fileLen*2];
+            System.arraycopy(toWriteBytes,0,toBytes,0,toWriteBytes.length);
+            System.arraycopy(toWriteBytes,0,toBytes,toWriteBytes.length,toWriteBytes.length);
+            Assert.assertArrayEquals(toBytes, readBytes);
 
         } finally {
             cluster.shutdown();

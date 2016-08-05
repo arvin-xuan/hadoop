@@ -966,7 +966,7 @@ class BlockReceiver implements Closeable {
         responder.start(); // start thread to processes responses
       }
 
-      long szOff = 0;
+      long szOff = replicaInfo.getNumBytes();
       int oneWrite;
       while ((oneWrite = receivePacketNew(szOff)) > 0) {
       /* Receive until the last packet */

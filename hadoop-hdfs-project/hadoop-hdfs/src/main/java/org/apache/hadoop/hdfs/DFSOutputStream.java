@@ -1104,6 +1104,7 @@ public class DFSOutputStream extends FSOutputSummer
 
             boolean success = false;
             long newGS = 0L;
+            dfsClient.LOG.info("setupPipelineForAppendOrRecovery:"+src);
             while (!success && !streamerClosed && dfsClient.clientRunning) {
                 // Sleep before reconnect if a dn is restarting.
                 // This process will be repeated until the deadline or the datanode
@@ -1758,6 +1759,7 @@ public class DFSOutputStream extends FSOutputSummer
         this.shouldSyncBlock = flags.contains(CreateFlag.SYNC_BLOCK);
 
         boolean toNewBlock = flags.contains(CreateFlag.NEW_BLOCK);
+        isAppend = true;
 
         // The last partial block of the file has to be filled.
         if (!toNewBlock && lastBlock != null) {
@@ -1787,6 +1789,7 @@ public class DFSOutputStream extends FSOutputSummer
             }
             out.setUseDomainSocket(dfsClient.getConf().useDomainSocket);
             DFSClient.LOG.info("set useDomainSocket to :" + out.useDomainSocket);
+
             out.start();
             return out;
         } finally {
@@ -2228,7 +2231,11 @@ public class DFSOutputStream extends FSOutputSummer
     private synchronized void start() {
         //streamer.start();
         try {
-            streamer.setPipeline(streamer.nextBlockOutputStream());
+            if(isAppend){
+                streamer.setupPipelineForAppendOrRecovery();
+            }else{
+                streamer.setPipeline(streamer.nextBlockOutputStream());
+            }
             maxQueueSize = dfsClient.getConf().byteBufferQueueSize;
             perQueueSize = dfsClient.getConf().byteBufferPerSize;
             currentByteBuffer = bufferPool.getBuffer(perQueueSize + 4);
@@ -2348,7 +2355,7 @@ public class DFSOutputStream extends FSOutputSummer
                 currentPacket.setSyncBlock(shouldSyncBlock);
             }
 
-            flushInternal();             // flush all data to Datanodes
+            //flushInternal();             // flush all data to Datanodes
             // get last block before destroying the streamer
             ExtendedBlock lastBlock = streamer.getBlock();
             closeThreads(false);
@@ -2637,6 +2644,7 @@ public class DFSOutputStream extends FSOutputSummer
     private static int maxQueueSize;
     private static int perQueueSize;
     private ByteBuffer currentByteBuffer;
+    private boolean isAppend = false;
 
     private DataByteBufferStreamer byteBufferStreamer = null;
 
@@ -2710,7 +2718,6 @@ public class DFSOutputStream extends FSOutputSummer
         }
         ExtendedBlock b = streamer.getBlock();
         b.setNumBytes(b.getNumBytes() + currLen-4);
-
     }
 
     public void closeByteBufferImpl() throws IOException {
@@ -2720,14 +2727,10 @@ public class DFSOutputStream extends FSOutputSummer
         while (lenbuf.hasRemaining()) {
             if (useDomainSocket) {
                 assert null != domainChannel : "domain socket not set yet, null value found.";
-                while(lenbuf.hasRemaining()){
-                    domainChannel.write(lenbuf);
-                }
+                domainChannel.write(lenbuf);
             } else {
                 assert null != tcpChannel : "tcp socket not set yet, null value found.";
-                while(lenbuf.hasRemaining()){
-                    tcpChannel.write(lenbuf);
-                }
+                tcpChannel.write(lenbuf);
             }
         }
         bufferPool.returnBuffer(lenbuf);
