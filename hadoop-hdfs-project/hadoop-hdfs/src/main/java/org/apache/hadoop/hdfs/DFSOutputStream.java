@@ -1104,7 +1104,7 @@ public class DFSOutputStream extends FSOutputSummer
 
             boolean success = false;
             long newGS = 0L;
-            dfsClient.LOG.info("setupPipelineForAppendOrRecovery:"+src);
+//            dfsClient.LOG.info("setupPipelineForAppendOrRecovery:" + src);
             while (!success && !streamerClosed && dfsClient.clientRunning) {
                 // Sleep before reconnect if a dn is restarting.
                 // This process will be repeated until the deadline or the datanode
@@ -1341,15 +1341,18 @@ public class DFSOutputStream extends FSOutputSummer
                     InputStream unbufIn = null;
                     long writeTimeout;
                     // Is it a local node?
-                    /*InetAddress addr = InetAddress.getByName(nodes[0].getIpAddr());
-                    if (addr != null && NetUtils.isLocalAddress(addr)) {
+                   InetAddress addr = InetAddress.getByName(nodes[0].getIpAddr());
+                     /*if (addr != null && NetUtils.isLocalAddress(addr)) {
                         DFSClient.LOG.warn("DataNode[0]:" + addr + " is not Localhost Address, Must Not Use Domain Socket.");
                         useDomainSocket = false;
                     }*/
+                    DFSClient.LOG.info("DataNode[0]:" + addr);
                     IOStreamPair saslStreams;
                     if (!useDomainSocket) {
                         assert null == s : "Previous socket unclosed";
                         assert null == blockReplyStream : "Previous blockReplyStream unclosed";
+//                        DFSClient.LOG.info("blocksize is:" + blockSize + " replication:" + nodes.length + " filename: " + src);
+//                        DFSClient.LOG.info("Sending Packet:" + block + " src:localhost " + " dst: " + nodes[0].getXferAddr(dfsClient.getConf().connectToDnViaHostname));
                         s = createSocketForPipeline(nodes[0], nodes.length, dfsClient);
                         tcpChannel = s.getChannel();
                         writeTimeout = dfsClient.getDatanodeWriteTimeout(nodes.length);
@@ -1422,6 +1425,11 @@ public class DFSOutputStream extends FSOutputSummer
                     restartingNodeIndex.set(-1);
                     hasError = false;
                 } catch (IOException ie) {
+                    if(useDomainSocket){
+                        useDomainSocket=false;
+                        continue;
+                    }
+                    DFSClient.LOG.info(ie.getMessage());
                     if (restartingNodeIndex.get() == -1) {
                         DFSClient.LOG.info("Exception in createBlockOutputStream", ie);
                     }
@@ -1787,7 +1795,7 @@ public class DFSOutputStream extends FSOutputSummer
             if (favoredNodes != null && favoredNodes.length != 0) {
                 out.streamer.setFavoredNodes(favoredNodes);
             }
-            out.setUseDomainSocket(dfsClient.getConf().useDomainSocket);
+            out.setUseDomainSocket(false);
             DFSClient.LOG.info("set useDomainSocket to :" + out.useDomainSocket);
 
             out.start();
@@ -2231,9 +2239,9 @@ public class DFSOutputStream extends FSOutputSummer
     private synchronized void start() {
         //streamer.start();
         try {
-            if(isAppend){
+            if (isAppend) {
                 streamer.setupPipelineForAppendOrRecovery();
-            }else{
+            } else {
                 streamer.setPipeline(streamer.nextBlockOutputStream());
             }
             maxQueueSize = dfsClient.getConf().byteBufferQueueSize;
@@ -2480,7 +2488,7 @@ public class DFSOutputStream extends FSOutputSummer
         private final LinkedList<ByteBuffer> dataQueue = new LinkedList<ByteBuffer>();
         private volatile boolean streamerClosed = false;
         private DFSClient dfsClient = null;
-//        private int timeWait = 0;
+        //        private int timeWait = 0;
 //        private int writeTimes = 0;
         private volatile boolean finished = false;
 
@@ -2678,6 +2686,7 @@ public class DFSOutputStream extends FSOutputSummer
 
     @Override
     public void close() throws IOException {
+//        DFSClient.LOG.info("closing file:" + src);
         int position_index = currentByteBuffer.position();
         if (position_index > 4) {
             currentByteBuffer.position(0);
@@ -2691,7 +2700,7 @@ public class DFSOutputStream extends FSOutputSummer
     }
 
     public void writeByteBufferImpl(ByteBuffer buf) throws IOException {
-//        DFSClient.LOG.info("==========(*_*)============="+times+"Client Send Socket Message in Bytes:" + buf.remaining() + "\t Using Domain Socket:" + useDomainSocket);
+//        DFSClient.LOG.info("==========(*_*)=============Client Send Socket Message in Bytes:" + buf.remaining() + "\t Using Domain Socket:" + useDomainSocket + "block:" + getBlock());
         if (useDomainSocket) {
             writeWithDomainSocket(buf);
         } else {
@@ -2703,7 +2712,7 @@ public class DFSOutputStream extends FSOutputSummer
     private void writeWithDomainSocket(ByteBuffer buf) throws IOException {
         int currLen = buf.remaining();
         assert null != domainChannel : "domain socket not set yet, null value found.";
-        while(buf.hasRemaining()){
+        while (buf.hasRemaining()) {
             domainChannel.write(buf);
         }
         ExtendedBlock b = streamer.getBlock();
@@ -2713,17 +2722,21 @@ public class DFSOutputStream extends FSOutputSummer
     private void writeWithTcpSocket(ByteBuffer buf) throws IOException {
         int currLen = buf.remaining();
         assert null != tcpChannel : "tcp socket not set yet, null value found.";
-        while(buf.hasRemaining()){
+        while (buf.hasRemaining()) {
             tcpChannel.write(buf);
         }
         ExtendedBlock b = streamer.getBlock();
-        b.setNumBytes(b.getNumBytes() + currLen-4);
+        b.setNumBytes(b.getNumBytes() + currLen - 4);
     }
 
     public void closeByteBufferImpl() throws IOException {
+        if (isClosed()) {
+            return;
+        }
         ByteBuffer lenbuf = bufferPool.getBuffer(4);
         lenbuf.putInt(0);
         lenbuf.flip();
+//        DFSClient.LOG.info("Sending End FLAG:0bytes for file:" + src);
         while (lenbuf.hasRemaining()) {
             if (useDomainSocket) {
                 assert null != domainChannel : "domain socket not set yet, null value found.";
@@ -2735,6 +2748,8 @@ public class DFSOutputStream extends FSOutputSummer
         }
         bufferPool.returnBuffer(lenbuf);
         closeOrigin();
+
+//        DFSClient.LOG.info("File:" + src + " closed successful");
         ds = null;
         s = null;
     }

@@ -549,7 +549,6 @@ class BlockReceiver implements Closeable {
       ((FileOutputStream) out).getChannel().write(dataBuf);
 
       replicaInfo.setNumBytes(offset + dataLen);
-
       replicaInfo.setLastChecksumAndDataLen(offset + dataLen, null);
 
       datanode.metrics.incrBytesWritten(dataLen);
@@ -561,6 +560,7 @@ class BlockReceiver implements Closeable {
 
       long stTime = ClientTraceLog.isInfoEnabled() ? System.nanoTime() : 0;
       finalizeBlock(stTime);
+//      LOG.info("write for block "+block+" succeed");
     }
 
     return dataLen;

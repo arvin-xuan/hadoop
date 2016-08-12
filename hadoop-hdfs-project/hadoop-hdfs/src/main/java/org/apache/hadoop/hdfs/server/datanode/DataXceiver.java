@@ -549,7 +549,7 @@ class DataXceiver extends Receiver implements Runnable {
       writeSuccessWithChecksumInfo(blockSender, new DataOutputStream(getOutputStream()));
 
       long beginRead = Time.monotonicNow();
-      read = blockSender.sendBlock(out, baseStream, null); // send data
+      read = blockSender.sendReadBlock(out, baseStream, null); // send data
       long duration = Time.monotonicNow() - beginRead;
       if (blockSender.didSendEntireByteRange()) {
         // If we sent the entire range, then we should expect the client
@@ -658,7 +658,7 @@ class DataXceiver extends Receiver implements Runnable {
       block.setNumBytes(dataXceiverServer.estimateBlockSize);
     }
     LOG.info("Receiving " + block + " src: " + remoteAddress + " dest: "
-        + localAddress);
+        + localAddress+" streamer:"+in.toString());
 
     DataOutputStream mirrorOut = null;  // stream to next target
     DataInputStream mirrorIn = null;    // reply from next target
@@ -717,7 +717,8 @@ class DataXceiver extends Receiver implements Runnable {
           mirrorOut = new DataOutputStream(new BufferedOutputStream(unbufMirrorOut,
               HdfsConstants.SMALL_BUFFER_SIZE));
           mirrorIn = new DataInputStream(unbufMirrorIn);
-
+          LOG.info("Creating pipline for block: " + block + " src: " + localAddress + " dest: "
+                  + mirrorNode+" streamer:"+unbufMirrorOut);
           // Do not propagate allowLazyPersist to downstream DataNodes.
           if (targetPinnings != null && targetPinnings.length > 0) {
             new Sender(mirrorOut).writeBlock(originalBlock, targetStorageTypes[0],

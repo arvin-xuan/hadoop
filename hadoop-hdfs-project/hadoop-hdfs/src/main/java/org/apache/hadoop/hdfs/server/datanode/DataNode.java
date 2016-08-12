@@ -1936,7 +1936,7 @@ public class DataNode extends ReconfigurableBase
         xfersBuilder.append(" ");
       }
       LOG.info(bpReg + " Starting thread to transfer " + 
-               block + " to " + xfersBuilder);                       
+               block + " to " + xfersBuilder);
 
       new Daemon(new DataTransfer(xferTargets, xferTargetStorageTypes, block,
           BlockConstructionStage.PIPELINE_SETUP_CREATE, "")).start();
